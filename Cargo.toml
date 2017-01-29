@@ -1,0 +1,14 @@
+[package]
+name = "uhttp_request_target"
+version = "0.5.0"
+authors = ["Mick Koch <mick@kochm.co>"]
+description = "Parser for classifying HTTP request target"
+license = "MIT"
+documentation = "https://docs.rs/uhttp_request_target"
+repository = "https://github.com/kchmck/uhttp_request_target.rs"
+keywords = ["http", "header", "request", "target"]
+
+[dependencies]
+
+lazy_static = "0.2.2"
+regex = "0.2"
