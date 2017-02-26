@@ -9,7 +9,7 @@
 //! use uhttp_request_target::RequestTarget;
 //!
 //! assert_eq!("/r/rust".parse(), Ok(RequestTarget::AbsPath));
-//! assert_eq!("https://example.com".parse(), Ok(RequestTarget::AbsURI));
+//! assert_eq!("https://example.com".parse(), Ok(RequestTarget::AbsUri));
 //! assert_eq!("example.com".parse(), Ok(RequestTarget::Authority));
 //! assert_eq!("*".parse(), Ok(RequestTarget::ServerOptions));
 //! ```
@@ -24,7 +24,7 @@ pub enum RequestTarget {
     AbsPath,
     /// Currently only used with the proxy protocol, but HTTP/1.1 servers must accept this
     /// form for other requests too.
-    AbsURI,
+    AbsUri,
     /// Used with CONNECT in the proxy protocol.
     Authority,
     /// Used for server-wide OPTIONS request.
@@ -51,7 +51,7 @@ impl std::str::FromStr for RequestTarget {
             Ok(AbsPath)
         } else if s.starts_with("http://") || s.starts_with("https://") {
             // The URI form starts with one of the two HTTP schemes [RFC7230§5.3.2].
-            Ok(AbsURI)
+            Ok(AbsUri)
         } else if !s.contains('/') {
             // The authority form contains no slashes [RFC7230§5.3.3].
             Ok(Authority)
@@ -92,10 +92,10 @@ mod test {
         assert_eq!("user@example.com/".parse::<RequestTarget>(), Err(()));
         assert_eq!("user name@example.com".parse::<RequestTarget>(), Ok(Authority));
 
-        assert_eq!("http://zombo.com".parse::<RequestTarget>(), Ok(AbsURI));
-        assert_eq!("http://picard.ytmnd.com/".parse::<RequestTarget>(), Ok(AbsURI));
-        assert_eq!("https://rust-lang.org".parse::<RequestTarget>(), Ok(AbsURI));
-        assert_eq!("https://rust-lang.org/a path".parse::<RequestTarget>(), Ok(AbsURI));
+        assert_eq!("http://zombo.com".parse::<RequestTarget>(), Ok(AbsUri));
+        assert_eq!("http://picard.ytmnd.com/".parse::<RequestTarget>(), Ok(AbsUri));
+        assert_eq!("https://rust-lang.org".parse::<RequestTarget>(), Ok(AbsUri));
+        assert_eq!("https://rust-lang.org/a path".parse::<RequestTarget>(), Ok(AbsUri));
         assert_eq!("http:/zombo.com".parse::<RequestTarget>(), Err(()));
         assert_eq!("file:/rust-lang.org".parse::<RequestTarget>(), Err(()));
         assert_eq!("ftp://rust-lang.org".parse::<RequestTarget>(), Err(()));
