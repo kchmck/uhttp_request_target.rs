@@ -14,13 +14,6 @@
 //! assert_eq!("*".parse(), Ok(RequestTarget::ServerOptions));
 //! ```
 
-extern crate regex;
-
-#[macro_use]
-extern crate lazy_static;
-
-use regex::Regex;
-
 /// A request target that appears in every HTTP request start line.
 ///
 /// This gives a hint as to how the target should be interpreted but doesn't guarantee the
@@ -44,18 +37,9 @@ impl std::str::FromStr for RequestTarget {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use self::RequestTarget::*;
 
-        lazy_static! {
-            static ref WHITESPACE: Regex = Regex::new(r"\s").unwrap();
-        }
-
-        // None of the forms can be empty [RFC7230§5.3].
-        if s.is_empty() {
-            return Err(());
-        }
-
-        // According to [RFC7230§3.1.1], recipients SHOULD NOT attempt to autocorrect
-        // [invalid whitespace]...
-        if WHITESPACE.is_match(s) {
+        // Surrounding whitespace and empty string are invalid [RFC7230§3.1.1,
+        // RFC7230§5.3].
+        if s != s.trim() || s.is_empty() {
             return Err(());
         }
 
@@ -85,6 +69,7 @@ mod test {
     fn test_request_target() {
         use self::RequestTarget::*;
 
+        assert_eq!("".parse::<RequestTarget>(), Err(()));
         assert_eq!("  ".parse::<RequestTarget>(), Err(()));
         assert_eq!("\t\n\r\u{2008}\u{00A0}\u{205F}".parse::<RequestTarget>(), Err(()));
         assert_eq!("".parse::<RequestTarget>(), Err(()));
@@ -98,19 +83,19 @@ mod test {
         assert_eq!("/path/sub/42?key=value".parse::<RequestTarget>(), Ok(AbsPath));
         assert_eq!("/where?q=now".parse::<RequestTarget>(), Ok(AbsPath));
         assert_eq!(" /path/sub/42".parse::<RequestTarget>(), Err(()));
-        assert_eq!("/path/sub boop/42".parse::<RequestTarget>(), Err(()));
+        assert_eq!("/path/sub boop/42".parse::<RequestTarget>(), Ok(AbsPath));
 
         assert_eq!("www.example.com:80".parse::<RequestTarget>(), Ok(Authority));
         assert_eq!("www.example.com".parse::<RequestTarget>(), Ok(Authority));
         assert_eq!("example.com".parse::<RequestTarget>(), Ok(Authority));
         assert_eq!("user@example.com".parse::<RequestTarget>(), Ok(Authority));
         assert_eq!("user@example.com/".parse::<RequestTarget>(), Err(()));
-        assert_eq!("user name@example.com".parse::<RequestTarget>(), Err(()));
+        assert_eq!("user name@example.com".parse::<RequestTarget>(), Ok(Authority));
 
         assert_eq!("http://zombo.com".parse::<RequestTarget>(), Ok(AbsURI));
         assert_eq!("http://picard.ytmnd.com/".parse::<RequestTarget>(), Ok(AbsURI));
         assert_eq!("https://rust-lang.org".parse::<RequestTarget>(), Ok(AbsURI));
-        assert_eq!("https://rust-lang.org/a path".parse::<RequestTarget>(), Err(()));
+        assert_eq!("https://rust-lang.org/a path".parse::<RequestTarget>(), Ok(AbsURI));
         assert_eq!("http:/zombo.com".parse::<RequestTarget>(), Err(()));
         assert_eq!("file:/rust-lang.org".parse::<RequestTarget>(), Err(()));
         assert_eq!("ftp://rust-lang.org".parse::<RequestTarget>(), Err(()));
