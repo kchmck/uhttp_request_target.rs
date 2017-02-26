@@ -1,6 +1,6 @@
 [package]
 name = "uhttp_request_target"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Mick Koch <mick@kochm.co>"]
 description = "Parser for classifying HTTP request target"
 license = "MIT"
